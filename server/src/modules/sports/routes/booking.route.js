@@ -8,12 +8,12 @@ import {
   getBooking,
   cancelBooking,
 } from "../controllers/booking.controller.js";
-import { authenticate } from "../../../common/middlewares/auth.middleware.js";
+import { authenticate, optionalAuthenticate } from "../../../common/middlewares/auth.middleware.js";
 
 const router = Router();
 
-// All booking operations require an authenticated member
-router.get("/", authenticate, getAllBookings);
+// GET /api/bookings supports optional authentication (public view or role-filtered)
+router.get("/", optionalAuthenticate, getAllBookings);
 router.post("/hold", authenticate, createHold);
 router.post("/confirm", authenticate, confirmHold);
 router.delete("/hold/:id", authenticate, releaseHold);

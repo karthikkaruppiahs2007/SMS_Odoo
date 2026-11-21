@@ -16,10 +16,10 @@ import {
 export const getAllBookings = async (req, res) => {
   try {
     const { sport, status, date, userId, page, limit } = req.query || {};
-    const role = req.user.role;
+    const role = req.user?.role;
 
-    // Regular members can only view their own bookings; ADMIN/SUBADMIN can query any userId or all
-    const targetUserId = role === "ADMIN" || role === "SUBADMIN" ? userId : req.user.id;
+    // Regular members can only view their own bookings; ADMIN, SUBADMIN, or public view can query all or by userId
+    const targetUserId = role === "MEMBER" ? req.user.id : userId;
 
     const result = await getAllBookingsService({
       sport,

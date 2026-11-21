@@ -56,6 +56,55 @@ export const authenticate = async (req, res, next) => {
 };
 
 /**
+ * Optional Authentication Middleware:
+ * If a valid token is present, attaches user to req.user.
+ * If no token is provided or invalid, proceeds without failing (req.user = null).
+ */
+export const optionalAuthenticate = async (req, res, next) => {
+  try {
+    let token = req.cookies?.token;
+
+    if (!token && req.headers.authorization?.startsWith("Bearer ")) {
+      token = req.headers.authorization.split(" ")[1];
+    }
+
+    if (!token) {
+      req.user = null;
+      return next();
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        membership: true,
+      },
+    });
+
+    if (user) {
+      const staff = await prisma.staff.findUnique({ where: { email: user.email } });
+      req.user = {
+        ...user,
+        role: staff?.role || decoded.role || "MEMBER",
+        module: staff?.designation || decoded.module || null,
+      };
+    } else {
+      req.user = null;
+    }
+
+    next();
+  } catch {
+    req.user = null;
+    next();
+  }
+};
+
+/**
  * Role-Based Access Control Middleware:
  * Verifies that the authenticated user possesses one of the allowed roles.
  * Allowed roles: 'ADMIN', 'SUBADMIN', 'MEMBER'
