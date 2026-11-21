@@ -19,13 +19,18 @@ export default function AuthPage({ initialMode = 'login' }) {
   });
 
   // Register form state
-  const [registerForm, setRegisterForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    password: '',
-    confirmPassword: '',
-    level: 'Intermediate',
+  const [registerForm, setRegisterForm] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tierParam = (params.get('tier') || 'SILVER').toUpperCase();
+    return {
+      name: '',
+      email: '',
+      phone: '',
+      password: '',
+      confirmPassword: '',
+      level: 'Intermediate',
+      membership: ['JUNIOR', 'SILVER', 'GOLD'].includes(tierParam) ? tierParam : 'SILVER',
+    };
   });
 
   const handleLoginSubmit = async (e) => {
@@ -76,6 +81,7 @@ export default function AuthPage({ initialMode = 'login' }) {
         email: registerForm.email,
         phone: registerForm.phone,
         password: registerForm.password,
+        membership: registerForm.membership || 'SILVER',
       });
 
       setLoading(false);
@@ -408,19 +414,35 @@ export default function AuthPage({ initialMode = 'login' }) {
                         </div>
                       </div>
 
-                      <div>
-                        <label className="text-xs uppercase tracking-wider text-gray-300 font-bold mb-1 d-block">
-                          Skill Level
-                        </label>
-                        <select
-                          value={registerForm.level}
-                          onChange={(e) => setRegisterForm({ ...registerForm, level: e.target.value })}
-                          className="w-100 bg-[#242424] text-white border border-gray-700 rounded-xl px-3 py-2.5 text-sm focus:border-[#C6EF2E] focus:outline-none cursor-pointer"
-                        >
-                          <option value="Beginner">Beginner (Learning Court Rules & Basics)</option>
-                          <option value="Intermediate">Intermediate (Consistent Rallying & Bandeja)</option>
-                          <option value="Advanced">Advanced (Competitive League & Tournaments)</option>
-                        </select>
+                      <div className="row g-2">
+                        <div className="col-12 col-md-6">
+                          <label className="text-xs uppercase tracking-wider text-gray-300 font-bold mb-1 d-block">
+                            Skill Level
+                          </label>
+                          <select
+                            value={registerForm.level}
+                            onChange={(e) => setRegisterForm({ ...registerForm, level: e.target.value })}
+                            className="w-100 bg-[#242424] text-white border border-gray-700 rounded-xl px-3 py-2.5 text-sm focus:border-[#C6EF2E] focus:outline-none cursor-pointer"
+                          >
+                            <option value="Beginner">Beginner (Learning Basics)</option>
+                            <option value="Intermediate">Intermediate (Consistent Rallying)</option>
+                            <option value="Advanced">Advanced (Competitive League)</option>
+                          </select>
+                        </div>
+                        <div className="col-12 col-md-6">
+                          <label className="text-xs uppercase tracking-wider text-gray-300 font-bold mb-1 d-block">
+                            Membership Tier
+                          </label>
+                          <select
+                            value={registerForm.membership}
+                            onChange={(e) => setRegisterForm({ ...registerForm, membership: e.target.value })}
+                            className="w-100 bg-[#242424] text-white border border-gray-700 rounded-xl px-3 py-2.5 text-sm focus:border-[#C6EF2E] focus:outline-none cursor-pointer font-bold text-[#C6EF2E]"
+                          >
+                            <option value="SILVER">Silver Member (10% Off)</option>
+                            <option value="GOLD">Gold Member (20% Off)</option>
+                            <option value="JUNIOR">Junior Member (15% Off)</option>
+                          </select>
+                        </div>
                       </div>
 
                       <div className="d-flex align-items-start gap-2 my-1">

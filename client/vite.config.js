@@ -28,6 +28,14 @@ export default defineConfig({
         target: 'http://localhost:5000',
         changeOrigin: true,
       },
+      '/schedule': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+      '/staff': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
       '/daily-activities': {
         target: 'http://localhost:5000',
         changeOrigin: true,

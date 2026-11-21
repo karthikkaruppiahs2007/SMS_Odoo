@@ -2,6 +2,7 @@ import { useState } from 'react';
 import PageBanner from '../components/common/PageBanner';
 import SubHeading from '../components/common/SubHeading';
 import ScrollReveal from '../components/common/ScrollReveal';
+import api from '../services/api';
 
 export default function ContactPage() {
   const [form, setForm] = useState({
@@ -12,12 +13,36 @@ export default function ContactPage() {
     message: '',
   });
 
-  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [statusMessage, setStatusMessage] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 8000);
+    setSubmitting(true);
+    setStatusMessage(null);
+
+    try {
+      await api.contact.sendMessage(form);
+      setSubmitting(false);
+      setStatusMessage({
+        type: 'success',
+        text: 'Thank you! Your inquiry has been received and logged at our Front Desk. We will get back to you shortly.',
+      });
+      setForm({
+        name: '',
+        email: '',
+        phone: '',
+        subject: '',
+        message: '',
+      });
+      setTimeout(() => setStatusMessage(null), 8000);
+    } catch (err) {
+      setSubmitting(false);
+      setStatusMessage({
+        type: 'error',
+        text: err.message || 'Failed to send message. Please contact front desk directly.',
+      });
+    }
   };
 
   return (
@@ -102,14 +127,20 @@ export default function ContactPage() {
                     Have questions, booking inquiries, or feedback? Fill out the form below and our team will respond within 24 hours.
                   </p>
 
-                  {submitted && (
-                    <div id="success-message" className="alert success mb-4">
-                      <span className="check-icon">
-                        <i className="fa-solid fa-check"></i>
-                      </span>
-                      <p className="mb-0 text-black font-semibold">
-                        Thank you! Your inquiry has been submitted. We will get back to you shortly.
-                      </p>
+                  {statusMessage && (
+                    <div
+                      className={`p-4 rounded-2xl mb-4 d-flex align-items-center gap-3 ${
+                        statusMessage.type === 'success'
+                          ? 'bg-[#C6EF2E]/10 border border-[#C6EF2E] text-[#C6EF2E]'
+                          : 'bg-red-500/10 border border-red-500 text-red-400'
+                      }`}
+                    >
+                      <i
+                        className={`fa-solid ${
+                          statusMessage.type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'
+                        } text-xl`}
+                      ></i>
+                      <p className="mb-0 text-sm font-semibold">{statusMessage.text}</p>
                     </div>
                   )}
 
@@ -199,8 +230,14 @@ export default function ContactPage() {
                     </div>
 
                     <div>
-                      <button type="submit" className="btn btn-accent w-100 justify-content-center">
-                        <span className="btn-title">Send Message</span>
+                      <button
+                        type="submit"
+                        disabled={submitting}
+                        className={`btn btn-accent w-100 justify-content-center ${
+                          submitting ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                      >
+                        <span className="btn-title">{submitting ? 'Sending Message...' : 'Send Message'}</span>
                         <span className="icon-circle">
                           <i className="fa-solid fa-arrow-right"></i>
                         </span>

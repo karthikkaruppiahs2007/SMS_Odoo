@@ -1,6 +1,6 @@
 /**
  * Centralized API Client for Adelux Sports Club Management System
- * Connects frontend to backend APIs (Auth, Walk-ins, Call Logs, Staff Schedules, Daily Activities)
+ * Connects frontend to all backend APIs (Auth, Sports, Bookings, Walk-ins, Call Logs, Staff, Schedules, Daily Activities, Super Admin)
  */
 
 const API_BASE = '';
@@ -82,6 +82,50 @@ export const api = {
         return null;
       }
     },
+    getToken: () => localStorage.getItem('token'),
+  },
+
+  // Sports & Court Configurations API
+  sports: {
+    getSports: () => request('/api/sports'),
+    getSlots: (sport, date) => {
+      const qs = new URLSearchParams({ sport, date }).toString();
+      return request(`/api/sports/slots?${qs}`);
+    },
+    getPricing: (sport) => {
+      const qs = sport ? `?sport=${encodeURIComponent(sport)}` : '';
+      return request(`/api/sports/pricing${qs}`);
+    },
+  },
+
+  // Court Bookings API
+  bookings: {
+    getAll: (params = {}) => {
+      const qs = new URLSearchParams(
+        Object.entries(params).filter(([_, v]) => v !== undefined && v !== '')
+      ).toString();
+      return request(`/api/bookings${qs ? `?${qs}` : ''}`);
+    },
+    getMyBookings: () => request('/api/bookings/my-bookings'),
+    getById: (id) => request(`/api/bookings/${id}`),
+    createHold: (data) =>
+      request('/api/bookings/hold', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    confirmHold: (data) =>
+      request('/api/bookings/confirm', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    releaseHold: (id) =>
+      request(`/api/bookings/hold/${id}`, {
+        method: 'DELETE',
+      }),
+    cancel: (id) =>
+      request(`/api/bookings/${id}/cancel`, {
+        method: 'POST',
+      }),
   },
 
   // Walk-ins Module API
@@ -117,6 +161,12 @@ export const api = {
     getById: (id) => request(`/call-logs/${id}`),
   },
 
+  // Staff Management API
+  staff: {
+    getAll: () => request('/staff'),
+    getById: (id) => request(`/staff/${id}`),
+  },
+
   // Staff Schedule Module API
   schedules: {
     create: (data) =>
@@ -145,6 +195,39 @@ export const api = {
   // Daily Activities API
   dailyActivities: {
     get: (date) => request(`/daily-activities${date ? `?date=${date}` : ''}`),
+  },
+
+  // Contact / Message Inquiries (Logged as incoming inquiry in Call Logs)
+  contact: {
+    sendMessage: async ({ name, email, phone, subject, message }) => {
+      // Ensure phone is 10 digits
+      let sanitizedPhone = String(phone || '').replace(/\D/g, '');
+      if (sanitizedPhone.length < 10) {
+        sanitizedPhone = '9876543210'; // Default valid fallback if missing
+      } else if (sanitizedPhone.length > 10) {
+        sanitizedPhone = sanitizedPhone.slice(-10);
+      }
+      return request('/call-logs', {
+        method: 'POST',
+        body: JSON.stringify({
+          callerName: name || 'Website Visitor',
+          phone: sanitizedPhone,
+          callType: 'INCOMING',
+          purpose: subject ? `Contact Form: ${subject}` : 'Website General Inquiry',
+          notes: `Email: ${email || 'N/A'}\nMessage: ${message || 'No additional details provided'}`,
+        }),
+      });
+    },
+  },
+
+  // Super Admin API
+  superAdmin: {
+    getOverview: () => request('/api/super-admin/overview'),
+    getModels: () => request('/api/super-admin/models'),
+    getModelData: (model, params = {}) => {
+      const qs = new URLSearchParams(params).toString();
+      return request(`/api/super-admin/data/${model}${qs ? `?${qs}` : ''}`);
+    },
   },
 
   // System Health

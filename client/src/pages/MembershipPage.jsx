@@ -167,8 +167,8 @@ export default function MembershipPage() {
                         <li>Member ID & Digital Pass</li>
                       </ul>
                       <div className="underline-pricing"></div>
-                      <Link to="/booking" className="btn btn-accent d-flex justify-content-between align-items-center w-100">
-                        <span className="btn-title mx-auto text-center flex-grow-1">Join Now</span>
+                      <Link to="/register?tier=JUNIOR" className="btn btn-accent d-flex justify-content-between align-items-center w-100">
+                        <span className="btn-title mx-auto text-center flex-grow-1">Join Basic</span>
                         <span className="icon-circle ms-auto">
                           <i className="fa-solid fa-arrow-right"></i>
                         </span>
@@ -200,8 +200,8 @@ export default function MembershipPage() {
                         <li>10% Off Coaching Packages</li>
                       </ul>
                       <div className="underline-pricing"></div>
-                      <Link to="/booking" className="btn btn-accent d-flex justify-content-between align-items-center w-100">
-                        <span className="btn-title mx-auto text-center flex-grow-1">Join Now</span>
+                      <Link to="/register?tier=SILVER" className="btn btn-accent d-flex justify-content-between align-items-center w-100">
+                        <span className="btn-title mx-auto text-center flex-grow-1">Join Standard</span>
                         <span className="icon-circle ms-auto">
                           <i className="fa-solid fa-arrow-right"></i>
                         </span>
@@ -233,8 +233,8 @@ export default function MembershipPage() {
                         <li>15% Off Merchandise & Coaching</li>
                       </ul>
                       <div className="underline-pricing"></div>
-                      <Link to="/booking" className="btn btn-accent d-flex justify-content-between align-items-center w-100">
-                        <span className="btn-title mx-auto text-center flex-grow-1">Join Now</span>
+                      <Link to="/register?tier=GOLD" className="btn btn-accent d-flex justify-content-between align-items-center w-100">
+                        <span className="btn-title mx-auto text-center flex-grow-1">Join Elite</span>
                         <span className="icon-circle ms-auto">
                           <i className="fa-solid fa-arrow-right"></i>
                         </span>
