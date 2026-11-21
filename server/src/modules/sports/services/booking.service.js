@@ -375,3 +375,68 @@ export const getBookingById = async (userId, bookingId, role) => {
 
   return booking;
 };
+
+/**
+ * 7. Get All Bookings (with optional filters & pagination):
+ * Allows filtering by sport, status, date, and user ID.
+ */
+export const getAllBookings = async ({
+  sport,
+  status,
+  date,
+  userId,
+  page = 1,
+  limit = 20,
+} = {}) => {
+  const where = {};
+
+  if (sport) {
+    where.whichCourt = sport.toUpperCase();
+  }
+
+  if (status) {
+    where.status = status.toUpperCase();
+  }
+
+  if (userId) {
+    where.userID = userId;
+  }
+
+  if (date) {
+    const startOfDay = new Date(`${date}T00:00:00.000Z`);
+    const endOfDay = new Date(`${date}T23:59:59.999Z`);
+    where.slot = {
+      gte: startOfDay,
+      lte: endOfDay,
+    };
+  }
+
+  const pageNum = Math.max(1, Number(page) || 1);
+  const takeNum = Math.min(100, Math.max(1, Number(limit) || 20));
+  const skip = (pageNum - 1) * takeNum;
+
+  const [bookings, total] = await Promise.all([
+    prisma.sportsBooking.findMany({
+      where,
+      include: {
+        user: {
+          select: { id: true, name: true, email: true, phone: true, membership: true },
+        },
+      },
+      orderBy: { slot: "desc" },
+      skip,
+      take: takeNum,
+    }),
+    prisma.sportsBooking.count({ where }),
+  ]);
+
+  return {
+    bookings,
+    pagination: {
+      page: pageNum,
+      limit: takeNum,
+      total,
+      totalPages: Math.ceil(total / takeNum) || 1,
+    },
+  };
+};

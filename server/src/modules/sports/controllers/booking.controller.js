@@ -5,7 +5,45 @@ import {
   cancelConfirmedBooking,
   getUserBookings,
   getBookingById,
+  getAllBookings as getAllBookingsService,
 } from "../services/booking.service.js";
+
+/**
+ * GET /api/bookings
+ * Get all booking details with optional filters (sport, status, date, userId, page, limit).
+ * Admins and sub-admins see all bookings; members see their own by default.
+ */
+export const getAllBookings = async (req, res) => {
+  try {
+    const { sport, status, date, userId, page, limit } = req.query || {};
+    const role = req.user.role;
+
+    // Regular members can only view their own bookings; ADMIN/SUBADMIN can query any userId or all
+    const targetUserId = role === "ADMIN" || role === "SUBADMIN" ? userId : req.user.id;
+
+    const result = await getAllBookingsService({
+      sport,
+      status,
+      date,
+      userId: targetUserId,
+      page,
+      limit,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Bookings retrieved successfully",
+      ...result,
+    });
+  } catch (error) {
+    console.error("Get all bookings error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to retrieve bookings",
+      error: error.message,
+    });
+  }
+};
 
 /**
  * POST /api/bookings/hold
